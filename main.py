@@ -2,7 +2,7 @@ from simulacion import Simulacion
 import numpy as np
 
 def main():
-	simulador = Simulacion()
+	simulacion = Simulacion()
 	
 	pos1 = np.array([
 		[1, 0, 1, 0, 1, 0, 1, 0],
@@ -14,7 +14,7 @@ def main():
 		[1, 0, 1, 0, 1, 0, 1, 0],
 	])
 	
-	res1 = simulador.run(pos1)
+	res1 = simulacion.run(pos1)
 
 if __name__ == '__main__':
 	main()
