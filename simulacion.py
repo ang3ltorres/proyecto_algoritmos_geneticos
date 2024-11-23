@@ -1,3 +1,5 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame
 import numpy
 import math
@@ -8,8 +10,8 @@ from random import random, choice, uniform, randrange
 
 # Globales
 tileSize = 16
-pantallaAncho = 800
-pantallaAlto = 600
+pantallaAncho = 1280
+pantallaAlto = 720
 
 alto = 0
 ancho = 0
@@ -69,8 +71,8 @@ class Entity(pygame.sprite.Sprite):
 
 		# Movimiento random
 		self.direccionActual = 0
-		self.direccionTiempo = 90
-		self.direccionContadorTiempo = self.direccionTiempo
+		self.direccionTiempo = None
+		self.direccionContadorTiempo = None
 
 		self.direccionActual = uniform(0, 360)
 		self.dx = math.cos(math.radians(self.direccionActual)) * self.velocidad
@@ -105,8 +107,11 @@ class Conejo(Entity):
 	def __init__(self, x, y):
 		super().__init__(x, y)
 		self.setAnimacion(self.ANIMATION.RUNNING)
-		self.velocidad = 2
-		self.rango = 128
+		self.velocidad = 1.5
+		self.rango = 128 * 3
+
+		self.direccionTiempo = 120
+		self.direccionContadorTiempo = randrange(0, self.direccionTiempo, 1)
 
 	def update(self, grupoZorros: pygame.sprite.Group):
 
@@ -175,9 +180,12 @@ class Zorro(Entity):
 	def __init__(self, x, y):
 		super().__init__(x, y)
 		self.setAnimacion(self.ANIMATION.RUNNING)
-		self.velocidad = 3
+		self.velocidad = 4
 		self.rangoPelea = 128
-		self.rangoCaza = 128 * 3
+		self.rangoCaza = 128 * 4
+
+		self.direccionTiempo = 90
+		self.direccionContadorTiempo = randrange(0, self.direccionTiempo, 1)
 
 	def update(self, grupoConejos: pygame.sprite.Group, grupoZorros: pygame.sprite.Group):
 
@@ -217,10 +225,9 @@ class Zorro(Entity):
 					
 					zorrosPerdidos += 1
 					
-					if (choice([True, False])):
-						self.kill()
-					else:
-						zorro_cercano.kill()
+
+					self.kill()
+
 
 			# No hay zorros ni conejos
 			# El zorro camina en direcciones aleatorias
@@ -301,16 +308,16 @@ class Simulacion:
 		
 		self.grupoZorros = pygame.sprite.Group()
 	
-		for x in range(posicionesZorros.shape[0]):
-			for y in range(posicionesZorros.shape[1]):
+		for y in range(posicionesZorros.shape[0]):
+			for x in range(posicionesZorros.shape[1]):
 
 				# Crear conejos por hectarea
 				for i in range(conejosPorHectarea):
-					self.grupoConejos.add(Conejo(x * 256, y * 256))
+					self.grupoConejos.add(Conejo((x * 256), (y * 256)))
 				
 
 				# Crear zorros en las posiciones dadas
-				if (posicionesZorros[x, y] == 1):
+				if (posicionesZorros[y, x] == 1):
 					self.grupoZorros.add(Zorro(x * 256, y * 256))
 
 		# Camara
@@ -322,8 +329,8 @@ class Simulacion:
 		for x in range(ancho):
 			for y in range(alto):
 				# Pintar el pasto decorativo
-				if random() < 0.1:
-					self.surfaceTerreno.blit(textureAtlas, (x * tileSize, y * tileSize), (144 + (16 * choice(range(4))), 0, 16, 16))
+				if random() < 0.05:
+					self.surfaceTerreno.blit(textureAtlas, (x * tileSize, y * tileSize), (144 + (16 * choice(range(10))), 0, 16, 16))
 
 		# Dibujar cuadricula
 		width, height = self.surfaceTerreno.get_size()
