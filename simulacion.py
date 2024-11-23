@@ -181,7 +181,7 @@ class Zorro(Entity):
 		super().__init__(x, y)
 		self.setAnimacion(self.ANIMATION.RUNNING)
 		self.velocidad = 4
-		self.rangoPelea = 128
+		self.rangoPelea = 64
 		self.rangoCaza = 128 * 4
 
 		self.direccionTiempo = 90
@@ -222,10 +222,7 @@ class Zorro(Entity):
 
 				# Atacar el otro zorro y decidir quien muere
 				if (self.rect.colliderect(zorro_cercano.rect)):
-					
 					zorrosPerdidos += 1
-					
-
 					self.kill()
 
 

@@ -5,16 +5,29 @@ def main():
 	simulacion = Simulacion()
 	
 	pos1 = np.array([
-		[0, 0, 0, 0],
-		[0, 1, 0, 0],
-		[0, 0, 0, 0],
-		[0, 0, 1, 0],
+		[0, 0, 1, 0, 0],
+		[0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 1],
+		[1, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0],
+		[0, 0, 1, 0, 0],
 
 	])
 
+	resultados = []
+
 	conejosPorHectarea = 2
-	zorrosPerdidos, tiempoDeCaza = simulacion.run(pos1, conejosPorHectarea)
-	print(f"Zorros Perdidos: {zorrosPerdidos}\nTiempo de Caza: {tiempoDeCaza:.2f} (Horas? Minutos?)")
+
+	for i in range(6):
+		zorrosPerdidos, tiempoDeCaza = simulacion.run(pos1, conejosPorHectarea)
+		resultados.append((zorrosPerdidos, tiempoDeCaza))
+
+	# Calcular promedios
+	zorrosPerdidosPromedio = sum(r[0] for r in resultados) / len(resultados)
+	tiempoDeCazaPromedio = sum(r[1] for r in resultados) / len(resultados)
+
+	print("Zorros Perdidos Promedio:", zorrosPerdidosPromedio)
+	print("Tiempo de Caza Promedio:", tiempoDeCazaPromedio)
 
 if __name__ == '__main__':
 	main()
