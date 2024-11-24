@@ -385,7 +385,7 @@ class Simulacion:
 			tiempoDeCaza += 1
 
 			pygame.display.flip()
-			pygame.time.Clock().tick(30)
+			pygame.time.Clock().tick(0)
 
 		# Si el usuario cierra la ventana antes de terminar
 		return [0, 0]
