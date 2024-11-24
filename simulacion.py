@@ -98,26 +98,37 @@ class Entity(pygame.sprite.Sprite):
 		self.frameActual = 0
 		self.frameVelocidadContador = 0
 
-# Distancia entre 2 entidates
 def distancia(a: Entity, b: Entity):
-	return math.sqrt((a.rect.x - b.rect.x) ** 2 + (a.rect.y - b.rect.y) ** 2)
+
+	# Calcular la posicion del centro de cada rectangulo
+	centro_a = a.rect.center
+	centro_b = b.rect.center
+
+	# Calcular la distancia entre los centros
+	return math.sqrt((centro_a[0] - centro_b[0]) ** 2 + (centro_a[1] - centro_b[1]) ** 2)
 
 class Conejo(Entity):
 
 	def __init__(self, x, y):
 		super().__init__(x, y)
 		self.setAnimacion(self.ANIMATION.RUNNING)
+
+		# Caracteristicas
 		self.velocidad = 1.5
 		self.rango = 128 * 3
 
+		# Movimiento random
 		self.direccionTiempo = 120
 		self.direccionContadorTiempo = randrange(0, self.direccionTiempo, 1)
+
+		# Rectangulo
+		self.rect = pygame.Rect((x, y, 15, 12))
 
 	def update(self, grupoZorros: pygame.sprite.Group):
 
 		global ancho, alto, tileSize
 
-		# Encontrar el zorro más cercano dentro del rango
+		# Encontrar el zorro mas cercano dentro del rango
 		zorros_detectados = [z for z in grupoZorros if distancia(self, z) <= self.rango]
 		if zorros_detectados:
 			zorro_cercano = min(zorros_detectados, key=lambda z: distancia(self, z))
@@ -136,7 +147,7 @@ class Conejo(Entity):
 				self.direccionContadorTiempo = 0
 				
 				if (self.rect.x < 0 or self.rect.y < 0 or self.rect.x > (ancho * tileSize) or self.rect.y > (alto * tileSize)):
-					# Calcular la dirección en grados hacia el centro
+					# Calcular la direccion en grados hacia el centro
 					self.direccionActual = math.degrees(math.atan2(((alto * tileSize) // 2) - self.rect.y, ((ancho * tileSize) // 2) - self.rect.x))
 				else:
 					# Setear direccion aleatoria
@@ -155,76 +166,78 @@ class Conejo(Entity):
 	def draw(self, pantalla: pygame.display, camera: Camera):
 
 		screen_pos = pygame.math.Vector2(self.rect.topleft) - pygame.math.Vector2(camera.x, camera.y)
+
+		# Dibujar el radio
 		# pygame.draw.circle(pantalla, (0, 0, 255), screen_pos, self.rango, 1)
+
+		# Dibujar rectangulo de colision
+		# pygame.draw.rect(pantalla, (255, 0, 0), self.rect.move(-camera.x, -camera.y))
+
 		pantalla.blit(self.image, screen_pos)
 
 	def setAnimacion(self, animacion):
 		super().setAnimacion(animacion)
 		
 		match animacion:
-			case self.ANIMATION.IDLE:
-				self.frameFila = 0
-				self.frameTotal = 2
-				self.frameVelocidad = 8
 			case self.ANIMATION.RUNNING:
-				self.frameFila = 1
+				self.frameFila = 0
 				self.frameTotal = 4
 				self.frameVelocidad = 3
-			case self.ANIMATION.ACTION:
-				self.frameFila = 3
-				self.frameTotal = 10
-				self.frameVelocidad = 24
 
 class Zorro(Entity):
 
 	def __init__(self, x, y):
 		super().__init__(x, y)
 		self.setAnimacion(self.ANIMATION.RUNNING)
-		self.velocidad = 4
-		self.rangoPelea = 64
-		self.rangoCaza = 128 * 4
 
+		# Caracteristicas
+		self.velocidad = 4
+		self.rangoPelea = 128
+
+		# Movimiento random
 		self.direccionTiempo = 90
 		self.direccionContadorTiempo = randrange(0, self.direccionTiempo, 1)
+
+		# Rectangulo
+		self.rect = pygame.Rect((x, y, 21, 16))
 
 	def update(self, grupoConejos: pygame.sprite.Group, grupoZorros: pygame.sprite.Group):
 
 		global ancho, alto, tileSize, zorrosPerdidos
 
-		# Encontrar el conejo más cercano dentro del rango de caza
-		conejos_detectados = [c for c in grupoConejos if distancia(self, c) <= self.rangoCaza]
-		if conejos_detectados:
-			conejo_cercano = min(conejos_detectados, key=lambda c: distancia(self, c))
-			dx = conejo_cercano.rect.x - self.rect.x
-			dy = conejo_cercano.rect.y - self.rect.y
+		# Encontrar el zorro mas cercano dentro del rango
+		zorros_detectados = [z for z in grupoZorros if z != self and distancia(self, z) <= self.rangoPelea]
+		if zorros_detectados:
+			zorro_cercano = min(zorros_detectados, key=lambda z: distancia(self, z))
+			dx = zorro_cercano.rect.x - self.rect.x
+			dy = zorro_cercano.rect.y - self.rect.y
 			distancia_total = max(math.sqrt(dx ** 2 + dy ** 2), 0.1)
-
-			# Moverse hacia el conejo
+			
+			# Moverse hacia el otro zorro
 			self.rect.x += int((dx / distancia_total) * self.velocidad)
 			self.rect.y += int((dy / distancia_total) * self.velocidad)
 
-			# Comerse al conejo
-			if (self.rect.colliderect(conejo_cercano.rect)):
-					conejo_cercano.kill()
-		
+			# Atacar el otro zorro y decidir quien muere
+			if (self.rect.colliderect(zorro_cercano.rect)):
+				zorrosPerdidos += 1
+				self.kill()
+		# No hay zorro cercano
 		else:
-			# Encontrar el zorro más cercano dentro del rango
-			zorros_detectados = [z for z in grupoZorros if z != self and distancia(self, z) <= self.rangoPelea]
-			if zorros_detectados:
-				zorro_cercano = min(zorros_detectados, key=lambda z: distancia(self, z))
-				dx = zorro_cercano.rect.x - self.rect.x
-				dy = zorro_cercano.rect.y - self.rect.y
+			# Encontrar el conejo mas cercano dentro del rango de caza
+			conejos_detectados = [c for c in grupoConejos if distancia(self, c)]
+			if conejos_detectados:
+				conejo_cercano = min(conejos_detectados, key=lambda c: distancia(self, c))
+				dx = conejo_cercano.rect.x - self.rect.x
+				dy = conejo_cercano.rect.y - self.rect.y
 				distancia_total = max(math.sqrt(dx ** 2 + dy ** 2), 0.1)
-				
-				# Moverse hacia el otro zorro
+
+				# Moverse hacia el conejo
 				self.rect.x += int((dx / distancia_total) * self.velocidad)
 				self.rect.y += int((dy / distancia_total) * self.velocidad)
 
-				# Atacar el otro zorro y decidir quien muere
-				if (self.rect.colliderect(zorro_cercano.rect)):
-					zorrosPerdidos += 1
-					self.kill()
-
+				# Comerse al conejo
+				if (self.rect.colliderect(conejo_cercano.rect)):
+						conejo_cercano.kill()
 
 			# No hay zorros ni conejos
 			# El zorro camina en direcciones aleatorias
@@ -236,7 +249,7 @@ class Zorro(Entity):
 					
 					# Si se sale del mapa
 					if (self.rect.x < 0 or self.rect.y < 0 or self.rect.x > (ancho * tileSize) or self.rect.y > (alto * tileSize)):
-						# Calcular la dirección en grados hacia el centro
+						# Calcular la direccion en grados hacia el centro
 						self.direccionActual = math.degrees(math.atan2(((alto * tileSize) // 2) - self.rect.y, ((ancho * tileSize) // 2) - self.rect.x))
 					else:
 						# Setear direccion aleatoria
@@ -254,26 +267,23 @@ class Zorro(Entity):
 
 	def draw(self, pantalla: pygame.display, camera: Camera):
 		screen_pos = pygame.math.Vector2(self.rect.topleft) - pygame.math.Vector2(camera.x, camera.y)
-		# pygame.draw.circle(pantalla, (255, 0, 0), screen_pos, self.rangoPelea, 1)
-		# pygame.draw.circle(pantalla, (255, 0, 255), screen_pos, self.rangoCaza, 1)
+
+		# Dibujar el radio
+		pygame.draw.circle(pantalla, (255, 0, 0), screen_pos, self.rangoPelea, 1)
+
+		# Dibujar rectangulo de colision
+		# pygame.draw.rect(pantalla, (255, 0, 0), self.rect.move(-camera.x, -camera.y))
+
 		pantalla.blit(self.image, screen_pos)
 
 	def setAnimacion(self, animacion):
 		super().setAnimacion(animacion)
 		
 		match animacion:
-			case self.ANIMATION.IDLE:
-				self.frameFila = 4
-				self.frameTotal = 5
-				self.frameVelocidad = 8
 			case self.ANIMATION.RUNNING:
-				self.frameFila = 5
+				self.frameFila = 2
 				self.frameTotal = 6
 				self.frameVelocidad = 3
-			case self.ANIMATION.ACTION:
-				self.frameFila = 6
-				self.frameTotal = 11
-				self.frameVelocidad = 4
 
 class Simulacion:
 
@@ -291,7 +301,7 @@ class Simulacion:
 		zorrosPerdidos = 0
 		tiempoDeCaza = 0
 
-		# Una hectarea igual a 16 cuadritos de 16 pixeles cada uno
+		# Una hectarea igual a 16 cuadritos de 16 pixeles cada uno (256 PIXELES)
 		alto, ancho = posicionesZorros.shape
 		ancho *= 16
 		alto *= 16
@@ -301,6 +311,7 @@ class Simulacion:
 		self.pantalla = pygame.display.set_mode((pantallaAncho, pantallaAlto))
 
 		self.grupoConejos = pygame.sprite.Group()
+		self.grupoConejos.add(Conejo((4 * 256), (4 * 256)))
 		self.conejosPorHectarea = conejosPorHectarea
 		
 		self.grupoZorros = pygame.sprite.Group()
@@ -312,7 +323,6 @@ class Simulacion:
 				for i in range(conejosPorHectarea):
 					self.grupoConejos.add(Conejo((x * 256), (y * 256)))
 				
-
 				# Crear zorros en las posiciones dadas
 				if (posicionesZorros[y, x] == 1):
 					self.grupoZorros.add(Zorro(x * 256, y * 256))
@@ -375,4 +385,7 @@ class Simulacion:
 			tiempoDeCaza += 1
 
 			pygame.display.flip()
-			pygame.time.Clock().tick(0)
+			pygame.time.Clock().tick(30)
+
+		# Si el usuario cierra la ventana antes de terminar
+		return [0, 0]
