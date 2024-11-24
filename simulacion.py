@@ -9,27 +9,27 @@ from enum import IntEnum
 from random import random, choice, uniform, randrange
 
 # Globales
-tileSize = 16
-pantallaAncho = 1280
-pantallaAlto = 720
+tileSize: int = 16
+pantallaAncho: int = 1280
+pantallaAlto: int = 720
 
-alto = 0
-ancho = 0
+alto: int = 0
+ancho: int = 0
 
 # Recursos
-textureAtlas = None
-fuenteDefault = None
+textureAtlas: pygame.Surface = None
+fuenteDefault: pygame.font.Font = None
 
 # Datos
-zorrosPerdidos = None
-tiempoDeCaza = None
+zorrosPerdidos: int = None
+tiempoDeCaza: int = None
 
 class Camera:
 
 	def __init__(self):
 
-		self.x = 0
-		self.y = 0
+		self.x: int = 0
+		self.y: int = 0
 
 	def update(self):
 
@@ -51,32 +51,32 @@ class Entity(pygame.sprite.Sprite):
 		super().__init__()
 
 		# Variables para la animacion
-		self.spriteAncho = 32
-		self.spriteAlto = 32
+		self.spriteAncho: int = 32
+		self.spriteAlto: int = 32
 
-		self.frameActual = 0
-		self.frameFila = 0
-		self.frameTotal = 0
-		self.frameVelocidad = 0
-		self.frameVelocidadContador = 0
+		self.frameActual: int = 0
+		self.frameFila: int = 0
+		self.frameTotal: int = 0
+		self.frameVelocidad: int = 0
+		self.frameVelocidadContador: int = 0
 		
 		# Porcion de textura
-		self.image = textureAtlas.subsurface((0, 0, 32, 32))
+		self.image: pygame.Surface = textureAtlas.subsurface((0, 0, 32, 32))
 
 		# Rectangulo
-		self.rect = pygame.Rect((x, y, 32, 32))
+		self.rect: pygame.Rect = pygame.Rect((x, y, 32, 32))
 
 		# Caracteristicas
-		self.velocidad = 0
+		self.velocidad: int = 0
 
 		# Movimiento random
-		self.direccionActual = 0
-		self.direccionTiempo = None
-		self.direccionContadorTiempo = None
+		self.direccionActual: int = 0
+		self.direccionTiempo: int = None
+		self.direccionContadorTiempo: int = None
 
-		self.direccionActual = uniform(0, 360)
-		self.dx = math.cos(math.radians(self.direccionActual)) * self.velocidad
-		self.dy = math.sin(math.radians(self.direccionActual)) * self.velocidad
+		self.direccionActual: int = uniform(0, 360)
+		self.dx: float = math.cos(math.radians(self.direccionActual)) * self.velocidad
+		self.dy: float = math.sin(math.radians(self.direccionActual)) * self.velocidad
 
 	def update(self):
 		
@@ -88,7 +88,7 @@ class Entity(pygame.sprite.Sprite):
 			if self.frameActual >= self.frameTotal:
 				self.frameActual = 0
 		
-		rect = pygame.Rect(self.frameActual * self.spriteAncho, self.frameFila * self.spriteAlto, self.spriteAncho, self.spriteAlto)
+		rect: pygame.Rect = pygame.Rect(self.frameActual * self.spriteAncho, self.frameFila * self.spriteAlto, self.spriteAncho, self.spriteAlto)
 		self.image = textureAtlas.subsurface(rect)
 
 	def draw(self, pantalla: pygame.display, camera: Camera):
@@ -114,12 +114,12 @@ class Conejo(Entity):
 		self.setAnimacion(self.ANIMATION.RUNNING)
 
 		# Caracteristicas
-		self.velocidad = 1.5
-		self.rango = 128 * 3
+		self.velocidad: int = 1.5
+		self.rango: int = 128 * 3
 
 		# Movimiento random
-		self.direccionTiempo = 120
-		self.direccionContadorTiempo = randrange(0, self.direccionTiempo, 1)
+		self.direccionTiempo: int = 120
+		self.direccionContadorTiempo: int = randrange(0, self.direccionTiempo, 1)
 
 		# Rectangulo
 		self.rect = pygame.Rect((x, y, 15, 12))
@@ -191,12 +191,12 @@ class Zorro(Entity):
 		self.setAnimacion(self.ANIMATION.RUNNING)
 
 		# Caracteristicas
-		self.velocidad = 4
-		self.rangoPelea = 128
+		self.velocidad: int = 4
+		self.rangoPelea: int = 128
 
 		# Movimiento random
-		self.direccionTiempo = 90
-		self.direccionContadorTiempo = randrange(0, self.direccionTiempo, 1)
+		self.direccionTiempo: int = 90
+		self.direccionContadorTiempo: int = randrange(0, self.direccionTiempo, 1)
 
 		# Rectangulo
 		self.rect = pygame.Rect((x, y, 21, 16))
