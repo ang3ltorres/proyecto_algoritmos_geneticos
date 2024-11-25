@@ -5,10 +5,10 @@ def main():
 	simulacion = Simulacion()
 	
 	pos1 = np.array([
-		[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -22,9 +22,9 @@ def main():
 
 	resultados = []
 
-	conejosPorHectarea = 4
+	conejosPorHectarea = 0
 
-	for i in range(6):
+	for i in range(1):
 		zorrosPerdidos, tiempoDeCaza = simulacion.run(pos1, conejosPorHectarea)
 		resultados.append((zorrosPerdidos, tiempoDeCaza))
 

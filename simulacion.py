@@ -40,6 +40,11 @@ class Camera:
 		else:
 			pygame.mouse.get_rel()
 
+	def get_camera_rect(self):
+
+		global pantallaAncho, pantallaAlto
+		return pygame.Rect(self.x, self.y, pantallaAncho, pantallaAlto)
+
 class Entity(pygame.sprite.Sprite):
 
 	class ANIMATION(IntEnum):
@@ -91,8 +96,8 @@ class Entity(pygame.sprite.Sprite):
 		rect: pygame.Rect = pygame.Rect(self.frameActual * self.spriteAncho, self.frameFila * self.spriteAlto, self.spriteAncho, self.spriteAlto)
 		self.image = textureAtlas.subsurface(rect)
 
-	def draw(self, pantalla: pygame.display, camera: Camera):
-		pass
+	def draw(self, pantalla: pygame.display, screen_pos: pygame.math.Vector2):
+		pantalla.blit(self.image, screen_pos)
 
 	def setAnimacion(self, animacion: ANIMATION):
 		self.frameActual = 0
@@ -173,7 +178,7 @@ class Conejo(Entity):
 		# Dibujar rectangulo de colision
 		# pygame.draw.rect(pantalla, (255, 0, 0), self.rect.move(-camera.x, -camera.y))
 
-		pantalla.blit(self.image, screen_pos)
+		super().draw(pantalla, screen_pos)
 
 	def setAnimacion(self, animacion):
 		super().setAnimacion(animacion)
@@ -274,7 +279,7 @@ class Zorro(Entity):
 		# Dibujar rectangulo de colision
 		# pygame.draw.rect(pantalla, (255, 0, 0), self.rect.move(-camera.x, -camera.y))
 
-		pantalla.blit(self.image, screen_pos)
+		super().draw(pantalla, screen_pos)
 
 	def setAnimacion(self, animacion):
 		super().setAnimacion(animacion)
@@ -371,15 +376,25 @@ class Simulacion:
 
 			# Limpiar pantalla
 			self.pantalla.fill((0, 0, 0))
+			
+			# Dibujar
+			cam_rect = self.camera.get_camera_rect()
 
-			# Dibujar terreno
-			self.pantalla.blit(self.surfaceTerreno, (-self.camera.x, -self.camera.y))
+			# Terreno
+			visible_area = cam_rect.clip((0, 0, ancho * tileSize, alto * tileSize))
+			self.subSurfaceTerreno = self.surfaceTerreno.subsurface(visible_area)
+			self.pantalla.blit(self.subSurfaceTerreno, (visible_area.left - cam_rect.x, visible_area.top - cam_rect.y))
 
-			# Dibujar entidades
+			# Entidades que estan dentro de la camara
+			conejo: Conejo
 			for conejo in self.grupoConejos:
-				conejo.draw(self.pantalla, self.camera)
+				if cam_rect.colliderect(conejo.rect):
+					conejo.draw(self.pantalla, self.camera)
+
+			zorro: Zorro
 			for zorro in self.grupoZorros:
-				zorro.draw(self.pantalla, self.camera)
+				if cam_rect.colliderect(zorro.rect):
+					zorro.draw(self.pantalla, self.camera)
 
 			# Tiempo
 			tiempoDeCaza += 1
