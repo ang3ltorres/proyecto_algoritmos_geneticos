@@ -22,7 +22,7 @@ def main():
 
 	conejosPorHectarea = 1
 
-	for i in range(32):
+	for i in range(1):
 		zorrosPerdidos, tiempoDeCaza = simulacion.run(pos1, conejosPorHectarea)
 		resultados.append((zorrosPerdidos, tiempoDeCaza))
 
