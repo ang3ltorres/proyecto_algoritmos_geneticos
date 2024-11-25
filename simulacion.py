@@ -268,7 +268,7 @@ class Simulacion:
 		self.frecuenciaDibujado = 1
 
 		pygame.init()
-		textureAtlas = pygame.image.load("proyecto_algoritmos_geneticos/texture.png")
+		textureAtlas = pygame.image.load("texture.png")
 		fuenteDefault = pygame.font.SysFont("Consolas", 18)
 
 	def draw(self):
