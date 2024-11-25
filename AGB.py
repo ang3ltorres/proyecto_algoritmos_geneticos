@@ -111,30 +111,39 @@ class FoxRabbit:
     def f(self, cromosoma):
         max_dinero = 0
         filas, columnas = cromosoma.shape
-        penalizacion_adyacencias = 0
+        penalizacion_adyacencias = 0  # Inicializamos una variable para penalizar las adyacencias
+
         for fila in range(filas):
             for columna in range(columnas):
                 if cromosoma[fila, columna] == 1:
                     max_dinero += self._denominaciones[fila, columna]
-                    if fila > 0 and cromosoma[fila - 1, columna] == 1:
+
+                    # Penalización por adyacencias verticales
+                    if fila > 0 and cromosoma[fila - 1, columna] == 1:  # Celda arriba
                         penalizacion_adyacencias += 1
-                    if fila < filas - 1 and cromosoma[fila + 1, columna] == 1:
+                    if fila < filas - 1 and cromosoma[fila + 1, columna] == 1:  # Celda abajo
                         penalizacion_adyacencias += 1
-                    if fila > 0 and columna > 0 and cromosoma[fila - 1, columna - 1] == 1:
+                    
+                    # Penalización por adyacencias diagonales
+                    if fila > 0 and columna > 0 and cromosoma[fila - 1, columna - 1] == 1:  # Arriba a la izquierda
                         penalizacion_adyacencias += 1
-                    if fila > 0 and columna < columnas - 1 and cromosoma[fila - 1, columna + 1] == 1:
+                    if fila > 0 and columna < columnas - 1 and cromosoma[fila - 1, columna + 1] == 1:  # Arriba a la derecha
                         penalizacion_adyacencias += 1
-                    if fila < filas - 1 and columna > 0 and cromosoma[fila + 1, columna - 1] == 1:
+                    if fila < filas - 1 and columna > 0 and cromosoma[fila + 1, columna - 1] == 1:  # Abajo a la izquierda
                         penalizacion_adyacencias += 1
-                    if fila < filas - 1 and columna < columnas - 1 and cromosoma[fila + 1, columna + 1] == 1:
+                    if fila < filas - 1 and columna < columnas - 1 and cromosoma[fila + 1, columna + 1] == 1:  # Abajo a la derecha
                         penalizacion_adyacencias += 1
-        max_dinero -= penalizacion_adyacencias * 10
+
+        # Restamos la penalización de las adyacencias verticales y diagonales
+        max_dinero -= penalizacion_adyacencias * 10  # Ajusta el valor de penalización según sea necesario
+
         return max_dinero
+
 
 def main():
     filas = 10
     columnas = 10
-    denominaciones = np.array([
+    conejosPorHectarea = np.array([
         [10, 12, 15, 14, 11, 13, 17, 16, 19, 18],
         [22, 21, 23, 24, 20, 25, 26, 28, 27, 29],
         [18, 17, 15, 14, 12, 11, 10, 16, 13, 19],
@@ -146,7 +155,7 @@ def main():
         [19, 18, 17, 16, 15, 14, 13, 12, 11, 10],
         [29, 28, 27, 26, 25, 24, 23, 22, 21, 20]
     ])
-    problema = FoxRabbit(denominaciones)
+    problema = FoxRabbit(conejosPorHectarea)
     individuos = 32
     generaciones = 2000
     factor_mutacion = 0.01
