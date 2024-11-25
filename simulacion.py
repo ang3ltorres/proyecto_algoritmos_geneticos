@@ -120,7 +120,6 @@ class Conejo(Entity):
 
 		# Caracteristicas
 		self.velocidad: int = 1.5
-		self.rango: int = 128 * 3
 
 		# Movimiento random
 		self.direccionTiempo: int = 120
@@ -129,42 +128,29 @@ class Conejo(Entity):
 		# Rectangulo
 		self.rect = pygame.Rect((x, y, 15, 12))
 
-	def update(self, grupoZorros: pygame.sprite.Group):
+	def update(self):
 
 		global ancho, alto, tileSize
 
-		# Encontrar el zorro mas cercano dentro del rango
-		zorros_detectados = [z for z in grupoZorros if distancia(self, z) <= self.rango]
-		if zorros_detectados:
-			zorro_cercano = min(zorros_detectados, key=lambda z: distancia(self, z))
-			dx = self.rect.x - zorro_cercano.rect.x
-			dy = self.rect.y - zorro_cercano.rect.y
-			distancia_total = max(math.sqrt(dx ** 2 + dy ** 2), 0.1)
+		self.direccionContadorTiempo += 1
+		if (self.direccionContadorTiempo >= self.direccionTiempo):
+			
+			self.direccionContadorTiempo = randrange(0, self.direccionTiempo, 1)
+			
+			if (self.rect.x < 0 or self.rect.y < 0 or self.rect.x > (ancho * tileSize) or self.rect.y > (alto * tileSize)):
+				# Calcular la direccion en grados hacia el centro
+				self.direccionActual = math.degrees(math.atan2(((alto * tileSize) // 2) - self.rect.y, ((ancho * tileSize) // 2) - self.rect.x))
+			else:
+				# Setear direccion aleatoria
+				self.direccionActual = uniform(0, 360)
 
-			# Huir
-			self.rect.x += int((dx / distancia_total) * self.velocidad)
-			self.rect.y += int((dy / distancia_total) * self.velocidad)
+			# Convertir la direccion en movimiento
+			self.dx = math.cos(math.radians(self.direccionActual)) * self.velocidad
+			self.dy = math.sin(math.radians(self.direccionActual)) * self.velocidad
 
-		else:
-			self.direccionContadorTiempo += 1
-			if (self.direccionContadorTiempo >= self.direccionTiempo):
-				
-				self.direccionContadorTiempo = 0
-				
-				if (self.rect.x < 0 or self.rect.y < 0 or self.rect.x > (ancho * tileSize) or self.rect.y > (alto * tileSize)):
-					# Calcular la direccion en grados hacia el centro
-					self.direccionActual = math.degrees(math.atan2(((alto * tileSize) // 2) - self.rect.y, ((ancho * tileSize) // 2) - self.rect.x))
-				else:
-					# Setear direccion aleatoria
-					self.direccionActual = uniform(0, 360)
-
-				# Convertir la direccion en movimiento
-				self.dx = math.cos(math.radians(self.direccionActual)) * self.velocidad
-				self.dy = math.sin(math.radians(self.direccionActual)) * self.velocidad
-
-			# Mover al zorro en la direccion
-			self.rect.x += int(self.dx)
-			self.rect.y += int(self.dy)
+		# Mover al conejo en la direccion
+		self.rect.x += int(self.dx)
+		self.rect.y += int(self.dy)
 
 		super().update()
 
@@ -312,11 +298,12 @@ class Simulacion:
 		alto *= 16
 
 		# Inicializar
+		self.clock = pygame.time.Clock()
+
 		pygame.display.set_caption("Simulacion presa-depredador")
 		self.pantalla = pygame.display.set_mode((pantallaAncho, pantallaAlto))
 
 		self.grupoConejos = pygame.sprite.Group()
-		self.grupoConejos.add(Conejo((4 * 256), (4 * 256)))
 		self.conejosPorHectarea = conejosPorHectarea
 		
 		self.grupoZorros = pygame.sprite.Group()
@@ -366,7 +353,7 @@ class Simulacion:
 			
 			# Actualizar sprites
 			for conejo in self.grupoConejos:
-				conejo.update(self.grupoZorros.sprites())
+				conejo.update()
 			for zorro in self.grupoZorros:
 				zorro.update(self.grupoConejos.sprites(), self.grupoZorros.sprites())
 
@@ -398,9 +385,9 @@ class Simulacion:
 
 			# Tiempo
 			tiempoDeCaza += 1
-
+			
 			pygame.display.flip()
-			pygame.time.Clock().tick(0)
+			self.clock.tick(0)
 
 		# Si el usuario cierra la ventana antes de terminar
 		return [0, 0]
