@@ -182,8 +182,8 @@ class Zorro(Entity):
 		self.setAnimacion(self.ANIMATION.RUNNING)
 
 		# Caracteristicas
-		self.velocidad: int = 4
-		self.rangoPelea: int = 128
+		self.velocidad: int = 3
+		self.rangoPelea: int = 64
 
 		# Movimiento random
 		self.direccionTiempo: int = 90
@@ -282,9 +282,36 @@ class Simulacion:
 	def __init__(self):
 		global tileSize, textureAtlas, fuenteDefault
 
+		self.frecuenciaDibujado = 1
+
 		pygame.init()
 		textureAtlas = pygame.image.load("texture.png")
 		fuenteDefault = pygame.font.SysFont("Consolas", 18)
+
+	def draw(self):
+		# Limpiar pantalla
+		self.pantalla.fill((0, 0, 0))
+		
+		# Dibujar
+		cam_rect = self.camera.get_camera_rect()
+
+		# Terreno
+		visible_area = cam_rect.clip((0, 0, ancho * tileSize, alto * tileSize))
+		self.subSurfaceTerreno = self.surfaceTerreno.subsurface(visible_area)
+		self.pantalla.blit(self.subSurfaceTerreno, (visible_area.left - cam_rect.x, visible_area.top - cam_rect.y))
+
+		# Entidades que estan dentro de la camara
+		conejo: Conejo
+		for conejo in self.grupoConejos:
+			if cam_rect.colliderect(conejo.rect):
+				conejo.draw(self.pantalla, self.camera)
+
+		zorro: Zorro
+		for zorro in self.grupoZorros:
+			if cam_rect.colliderect(zorro.rect):
+				zorro.draw(self.pantalla, self.camera)
+		
+		pygame.display.flip()
 
 	def run(self, posicionesZorros: numpy.ndarray, conejosPorHectarea: int) -> tuple[int, int]:
 		global alto, ancho, zorrosPerdidos, tiempoDeCaza
@@ -307,6 +334,8 @@ class Simulacion:
 		self.conejosPorHectarea = conejosPorHectarea
 		
 		self.grupoZorros = pygame.sprite.Group()
+
+		self.frameSkip = False
 	
 		for y in range(posicionesZorros.shape[0]):
 			for x in range(posicionesZorros.shape[1]):
@@ -341,13 +370,21 @@ class Simulacion:
 		for y in range(0, height, grid_size):
 				pygame.draw.line(self.surfaceTerreno, (0, 128, 0), (0, y), (width, y), 1)
 
-
 		# Main loop
+		self.frecuenciaDibujadoContador = 0
+
 		running = True
 		while running:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					running = False
+
+				elif event.type == pygame.KEYDOWN:
+
+					if event.key == pygame.K_RIGHT:
+						self.frecuenciaDibujado += 1
+					elif event.key == pygame.K_LEFT:
+						self.frecuenciaDibujado = max(1, self.frecuenciaDibujado - 1)
 
 			self.camera.update()
 			
@@ -360,34 +397,19 @@ class Simulacion:
 			# Si ya no hay conejos devolvemos los resultados
 			if (self.grupoConejos.__len__() == 0):
 				return [zorrosPerdidos, tiempoDeCaza / 60]
-
-			# Limpiar pantalla
-			self.pantalla.fill((0, 0, 0))
 			
-			# Dibujar
-			cam_rect = self.camera.get_camera_rect()
-
-			# Terreno
-			visible_area = cam_rect.clip((0, 0, ancho * tileSize, alto * tileSize))
-			self.subSurfaceTerreno = self.surfaceTerreno.subsurface(visible_area)
-			self.pantalla.blit(self.subSurfaceTerreno, (visible_area.left - cam_rect.x, visible_area.top - cam_rect.y))
-
-			# Entidades que estan dentro de la camara
-			conejo: Conejo
-			for conejo in self.grupoConejos:
-				if cam_rect.colliderect(conejo.rect):
-					conejo.draw(self.pantalla, self.camera)
-
-			zorro: Zorro
-			for zorro in self.grupoZorros:
-				if cam_rect.colliderect(zorro.rect):
-					zorro.draw(self.pantalla, self.camera)
-
 			# Tiempo
 			tiempoDeCaza += 1
 			
-			pygame.display.flip()
-			self.clock.tick(0)
+			# Dibujar
+			self.frecuenciaDibujadoContador += 1
+			if (self.frecuenciaDibujadoContador >= self.frecuenciaDibujado):
+				
+				self.frecuenciaDibujadoContador = 0
+				if not self.frameSkip:
+					self.draw()
+			
+			# self.clock.tick(0)
 
 		# Si el usuario cierra la ventana antes de terminar
 		return [0, 0]
