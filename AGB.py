@@ -7,6 +7,7 @@ class Individuo:
         self._columnas = columnas
         self._cromosoma = cromosoma
         self._fitness = 0
+        self.mejores_matrices = []  # Almacena las mejores matrices de cada n generación
 
 class AG:
     def __init__(self, cantidad_individuos, filas, columnas, generaciones, p, problema):
@@ -17,6 +18,7 @@ class AG:
         self._p = p
         self._problema = problema
         self._individuos = np.array([])
+        
 
     def run(self):
         self.crearIndividuos()
@@ -37,6 +39,8 @@ class AG:
             self._individuos = np.copy(hijos)
             self._individuos[np.random.randint(len(self._individuos))] = copy.deepcopy(self._mejor_historico)
             if generacion % 400 == 0:
+                 # Guardar la matriz del mejor histórico
+                self.mejores_matrices.append(copy.deepcopy(self._mejor_historico._cromosoma))
                 print("Generación: ", generacion)
                 print("Mejor Histórico (Fitness: {}):".format(self._mejor_historico._fitness))
                 print(self._mejor_historico._cromosoma)
