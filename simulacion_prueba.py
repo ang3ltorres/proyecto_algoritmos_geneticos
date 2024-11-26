@@ -68,7 +68,7 @@ class SimulacionPrueba:
                 conejo.mover()
             self.dibujar_mundo()
             pygame.display.flip()
-
+        pygame.time.delay(1000)  # 2000 milisegundos = 2 segundos
         pygame.quit()
 
     class Conejo:
