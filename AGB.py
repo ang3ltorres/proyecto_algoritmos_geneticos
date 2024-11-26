@@ -1,5 +1,11 @@
 import copy
 import numpy as np
+from simulacion_prueba import SimulacionPrueba
+
+# Parámetros de la simulación
+ANCHO = 800
+ALTO = 800
+CELDAS = 10
 
 class Individuo:
     def __init__(self, filas, columnas, cromosoma):
@@ -7,7 +13,7 @@ class Individuo:
         self._columnas = columnas
         self._cromosoma = cromosoma
         self._fitness = 0
-        self.mejores_matrices = []  # Almacena las mejores matrices de cada n generación
+        
 
 class AG:
     def __init__(self, cantidad_individuos, filas, columnas, generaciones, p, problema):
@@ -18,12 +24,13 @@ class AG:
         self._p = p
         self._problema = problema
         self._individuos = np.array([])
-        
+        self.mejores_matrices = []  # Almacena las mejores matrices de cada n generación
+        self.generaciones_simuladas = []
 
     def run(self):
         self.crearIndividuos()
         self._mejor_historico = self._individuos[0]
-        generacion = 0
+        generacion = 1
         while generacion <= self._generaciones:
             self.evaluaIndividuos()
             hijos = np.array([])
@@ -41,10 +48,12 @@ class AG:
             if generacion % 400 == 0:
                  # Guardar la matriz del mejor histórico
                 self.mejores_matrices.append(copy.deepcopy(self._mejor_historico._cromosoma))
+                self.generaciones_simuladas.append(generacion)
                 print("Generación: ", generacion)
                 print("Mejor Histórico (Fitness: {}):".format(self._mejor_historico._fitness))
                 print(self._mejor_historico._cromosoma)
             generacion += 1
+        return self.mejores_matrices, self.generaciones_simuladas
 
     def crearIndividuos(self):
         for i in range(self._cantidad_individuos):
@@ -147,7 +156,7 @@ class FoxRabbit:
 def main():
     filas = 10
     columnas = 10
-    conejosPorHectarea = np.array([
+    conejos = np.array([
         [10, 12, 15, 14, 11, 13, 17, 16, 19, 18],
         [22, 21, 23, 24, 20, 25, 26, 28, 27, 29],
         [18, 17, 15, 14, 12, 11, 10, 16, 13, 19],
@@ -159,12 +168,20 @@ def main():
         [19, 18, 17, 16, 15, 14, 13, 12, 11, 10],
         [29, 28, 27, 26, 25, 24, 23, 22, 21, 20]
     ])
-    problema = FoxRabbit(conejosPorHectarea)
+    problema = FoxRabbit(conejos)
     individuos = 32
     generaciones = 2000
     factor_mutacion = 0.01
     ag = AG(individuos, filas, columnas, generaciones, factor_mutacion, problema)
-    ag.run()
+    resultados,gen_sim = ag.run()
+
+    # Ejecutar simulación
+    for i, resultado in enumerate(resultados):
+        simulacion = SimulacionPrueba(ANCHO, ALTO, CELDAS, conejos, resultado, gen_sim[i])
+        simulacion.ejecutar()
+
+
+
 
 if __name__ == '__main__':
     main()
