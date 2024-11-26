@@ -57,12 +57,18 @@ class SimulacionPrueba:
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     corriendo = False
+
+            corriendo = False
             for zorro in self.zorros:
+                if (zorro.activo):
+                    corriendo = True
                 zorro.mover(self.conejos, self.contador_conejos_eliminados)
+
             for conejo in self.conejos:
                 conejo.mover()
             self.dibujar_mundo()
             pygame.display.flip()
+
         pygame.quit()
 
     class Conejo:
@@ -95,10 +101,14 @@ class SimulacionPrueba:
             self.celda_x = celda_x
             self.celda_y = celda_y
             self.color = color
+            self.activo = True # Está cazando
 
         def mover(self, conejos, contador_conejos_eliminados):
+                self.activo = False
                 for conejo in conejos:
                     if conejo.celda_x == self.celda_x and conejo.celda_y == self.celda_y:
+                        self.activo = True
+
                         if self.x < conejo.x:
                             self.x += 1
                         elif self.x > conejo.x:
