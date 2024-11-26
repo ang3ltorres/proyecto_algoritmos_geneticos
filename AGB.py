@@ -1,11 +1,5 @@
 import copy
 import numpy as np
-from simulacion_prueba import SimulacionPrueba
-
-# Parámetros de la simulación
-ANCHO = 800
-ALTO = 800
-CELDAS = 10
 
 class Individuo:
     def __init__(self, filas, columnas, cromosoma):
